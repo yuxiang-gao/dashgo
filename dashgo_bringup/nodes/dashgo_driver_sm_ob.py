@@ -2,7 +2,7 @@
 
 """
     A ROS Node for the Arduino microcontroller
-    
+
     Created for the Pi Robot Project: http://www.pirobot.org
     Copyright (c) 2012 Patrick Goebel.  All rights reserved.
 
@@ -10,12 +10,12 @@
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details at:
-    
+
     http://www.gnu.org/licenses/gpl.html
 """
 
@@ -382,6 +382,8 @@ class BaseController:
         # ping
         self.front_ranger=500
         self.back_ranger=500
+        self.left_ranger=500
+        self.right_ranger=500
         self.safe_ranger_0=15
         self.safe_ranger_1=50
         self.safe_ranger_2=80
@@ -447,9 +449,11 @@ class BaseController:
         if now > self.t_next:
             try:
                 r1,r2,r3,r4 = self.arduino.ping()
+                self.left_ranger=r1
                 self.front_ranger=r2
+                self.right_ranger=r3
                 self.back_ranger=r4
-                #rospy.loginfo("ranger: " + str(r1)+","+str(r2)+","+str(r3)+","+str(r4))
+                rospy.loginfo("ranger: " + str(r1)+","+str(r2)+","+str(r3)+","+str(r4))
             except:
                 rospy.logerr("ping error")
                 return
