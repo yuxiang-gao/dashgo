@@ -26,7 +26,7 @@ __version__ = '1.1'
 AIUIAppid = '583c10e6'
 AIUIKey = '2d8c2fa8a465b0dcbaca063e9493a2d9'
 AIUIScene = 'main'
-TTSText = '黑化肥会发黑'
+TTSText = 'hello hello hello'
 
 
 class MyPrettyPrinter(pprint.PrettyPrinter):
@@ -141,7 +141,7 @@ class aiui_msg_handler(object):  # 0x04
             self.ssid = content['ssid']
         elif self.msgType == 'tts_event':
             print 'tts_event'
-            self.ttsStart = (True if (content['eventType'] is 0) else False)
+            self.ttsStart = (True if (content['eventType'] == 0) else False)
             self.ttsError = content.get('error', None)
         else:
             print 'Not an aiui_event'
@@ -262,8 +262,12 @@ class aiui_ctrl_msg(object):  # 0x05
             self.msgContent = {'save_len': content.get('save_len', 0)}
         elif aiuiCtrlType == 'tts':
             # aiui_ctrl_msg('tts', action='start', text='')
-            ttsMsg = tts_msg(content['action'], content.get('text', None))
-            self.msgContent = ttsMsg.construct()
+            if content['action'] == 'start':
+                ttsMsg = {'action': 'start', 'text': self.text}
+            else:
+                ttsMsg = {'action': 'stop'}
+            #ttsMsg = tts_msg(content['action'], content.get('text', None))
+            self.msgContent = ttsMsg
         # elif aiuiCtrlType is 'handshake':
         #     self.msgContent = [165, 0, 0, 0]
         elif aiuiCtrlType == 'aiui_cfg':
@@ -279,6 +283,7 @@ class aiui_ctrl_msg(object):  # 0x05
         try:
             ctrlMsg = {'type': self.aiuiType,
                        'content': self.msgContent}
+            print 'construct :' + json.dumps(ctrlMsg)
             return json.dumps(ctrlMsg)
         except:
             pass
@@ -307,7 +312,7 @@ class aiui_ctrl_msg(object):  # 0x05
         t[3] = msgLen % 255
         t[4] = msgLen / 255
         t.append((~sum(t) + 1) & 0xff)
-        print t
+        print ' '.join(format(b, '02x') for b in t.tolist())
         return t
 
 
@@ -320,6 +325,7 @@ class COMThread(threading.Thread):
         self.sendCnt = 0
         self.ackID = 0
         self.handshakeID = 0
+        self.handshakeIDLast = 0
         self.handshakeCnt = 0
         self.sendID = 0
         # 将串口定义为”/dev/xunfei，比特率为115200，超时0.4秒“
@@ -341,9 +347,9 @@ class COMThread(threading.Thread):
     def send_ok(self, str, msgflag):
         print 'try handshake'
         if self.handshakeCnt > 20:
+            print 'handshake timeout'
             self.stop()
         else:
-            self.handshakeCnt += 1
             # TODO: Merge send_ok with aiui_ctrl_msg
             # acm = aiui_ctrl_msg('handshake')
             # self.ser.write(acm.construct_hex(self.globalID))
@@ -364,14 +370,20 @@ class COMThread(threading.Thread):
                 t[5] = ord(str[5])
                 t[6] = ord(str[6])
                 self.globalID = t[5] + 255 * t[6]
+            self.handshakeID = t[5] + 255 * t[6]
+            if self.handshakeID == self.handshakeIDLast:
+                self.handshakeCnt += 1
+            else:
+                self.handshakeCnt = 0
+            self.handshakeIDLast = self.handshakeID
             t[11] = (~sum(t) + 1) & 0xff
-            print t
+            print ' '.join(format(b, '02x') for b in t.tolist())
             self.ser.write(t)
 
     def send_msg(self, hexMsg):
         if self.sendCnt == 0:
             self.unsentMsg = hexMsg
-            self.sendID = self.flaget_id(hexMsg)
+            self.sendID = self.flagget_id(hexMsg)
             self.ser.write(hexMsg)
             self.sendCnt += 1
             self.sendSuccess = None
@@ -391,9 +403,10 @@ class COMThread(threading.Thread):
         # Done!
         print 'making tts msg'
         acm = aiui_ctrl_msg('tts', action=cmd, text=ttstxt)
-        print self.globalID
+        print 'send_tts ID:' + str(self.globalID)
         # self.ser.write(acm.construct_hex(self.globalID))
-        self.send_msg(acm.construct_hex(self.globalID))
+        self.ser.write(acm.msgContent)
+        # self.send_msg(acm.construct_hex(self.globalID))
         print 'tts msg sent'
         # t = array.array('B', [0xA5, 0x01,  # msg head & user ID
         #                       0x05,        # msg type
@@ -441,7 +454,7 @@ class COMThread(threading.Thread):
                 if aiuiMsg.get_type() == 'eventWakeup':
                     print 'wakeup angle: ' + str(aiuiMsg.get_angle())
                 elif aiuiMsg.get_type() == 'eventResultIAT':
-                    print ('IAT result: ' + ' '.join(aiuiMsg.get_result()))
+                    print ('IAT result: ' + ''.join(aiuiMsg.get_result()))
             elif aiuiMsg.get_msg_type() == 'tts_event':
                 if aiuiMsg.get_tts_state():
                     print 'tts start'
@@ -492,6 +505,7 @@ class COMThread(threading.Thread):
                                 if ('葡萄' in ''.join(parsedMsg.get_result())):
                                     print 'sending tts'
                                     self.send_tts('start', TTSText)
+                                    print 'tts sent'
                             print 'get one msg len=%d' % dataLen
             except serial.SerialException:
                 print 'serial.SerialException ERROR'
@@ -522,7 +536,7 @@ if __name__ == "__main__":
         th1.start()
         # time.sleep(5)
         # th1.my_tts()
-        time.sleep(20)
+        time.sleep(30)
         th1.stop()
     except Exception, e:
         print e
