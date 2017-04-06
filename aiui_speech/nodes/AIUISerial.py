@@ -78,11 +78,12 @@ class tts_msg(object):
 
     def construct(self):
         if self.action == 'start':
-            ttsMsg = {'type"': 'tts',
+            ttsMsg = {'type': 'tts',
                       'content': {'action': 'start', 'text': self.text}}
         else:
             ttsMsg = {'type': 'tts', 'content': {'action': 'stop'}}
         ttsJsonMsg = json.dumps(ttsMsg)
+        # ttsJsonMsg = '{"type": "tts", "content": {"action": "start", "text": "不吃葡萄就吐葡萄皮"} }'
         print 'constructing tts msg'
         print ttsJsonMsg
         return ttsJsonMsg
@@ -268,7 +269,7 @@ class aiui_ctrl_msg(object):  # 0x05
         except:
             pass
 
-    def construct_hex(self, msgID):
+    def construct_hex(self, msg_ID):
         t = array.array('B', [0xA5, 0x01,  # msg head & user ID
                               0x05,        # msg type
                               0x00, 0x00,  # msg length
@@ -276,11 +277,11 @@ class aiui_ctrl_msg(object):  # 0x05
                               ])
         if self.aiuiType == 'aiui_cfg':
             t[2] = 0x03
-        msgID += 1
-        if msgID > 65535:
-            msgID = 1
-        t[5] = msgID & 0xff
-        t[6] = (msgID >> 8) & 0xff
+        msg_ID += 1
+        if msg_ID > 65535:
+            msg_ID = 1
+        t[5] = msg_ID & 0xff
+        t[6] = (msg_ID >> 8) & 0xff
         # if self.type is 'handshake':
         #     t[2] = 0xff
         #     for d in self.construct():
@@ -302,12 +303,17 @@ class COMThread(threading.Thread):
         self._stopevent = threading.Event()
         self._stopevent.clear()
         self.globalID = 0
+        self.send_cnt = 0
+        self.ackID = 0
         # 将串口定义为”/dev/xunfei，比特率为115200，超时0.4秒“
         self.ser = serial.Serial(port='/dev/tty.usbserial',
                                  baudrate=115200,
                                  timeout=0.5)
         if self.ser is None:
             print '无法打开串口'
+        # else:
+        #     aiuiCM = aiui_ctrl_msg('aiui_msg', msg_type='reset')
+        #     aiuiCM.construct_hex(None, self.globalID)
 
     def flagget_len(self, str):
         return ord(str[3]) + ((ord(str[4])) << 8)
@@ -316,34 +322,56 @@ class COMThread(threading.Thread):
         return ord(str[5]) + ((ord(str[6])) << 8)
 
     def send_ok(self, str, msgflag):
-        # TODO: Merge send_ok with aiui_ctrl_msg
-        # acm = aiui_ctrl_msg('handshake')
-        # self.ser.write(acm.construct_hex(self.globalID))
-        t = array.array('B', [0xA5, 0x01,   # msg head & user ID
-                              msgflag,      # msg type
-                              0x04, 0x00,   # msg length
-                              0x00, 0x00,   # msg ID
-                              0xA5, 0x00,   # handshaking msg
-                              0x00, 0x00,   # handshaking msg
-                              0x00])        # checksum
-        if str is None:
-            self.globalID += 1
-            if self.globalID > 65535:
-                self.globalID = 1
-            t[5] = self.globalID & 0xff
-            t[6] = (self.globalID >> 8) & 0xff
+        if self.send_cnt > 10:
+            self.stop()
         else:
-            t[5] = ord(str[5])
-            t[6] = ord(str[6])
-        t[11] = (~sum(t) + 1) & 0xff
-        self.ser.write(t)
+            self.send_cnt += 1
+            # TODO: Merge send_ok with aiui_ctrl_msg
+            # acm = aiui_ctrl_msg('handshake')
+            # self.ser.write(acm.construct_hex(self.globalID))
+            t = array.array('B', [0xA5, 0x01,   # msg head & user ID
+                                  msgflag,      # msg type
+                                  0x04, 0x00,   # msg length
+                                  0x00, 0x00,   # msg ID
+                                  0xA5, 0x00,   # handshaking msg
+                                  0x00, 0x00,   # handshaking msg
+                                  0x00])        # checksum
+            if str is None:
+                self.globalID += 1
+                if self.globalID > 65535:
+                    self.globalID = 1
+                t[5] = self.globalID & 0xff
+                t[6] = (self.globalID >> 8) & 0xff
+            else:
+                t[5] = ord(str[5])
+                t[6] = ord(str[6])
+                self.globalID = t[5] + 255 * t[6]
+            t[11] = (~sum(t) + 1) & 0xff
+            print t
+            self.ser.write(t)
+
+    def send_msg(self, hexMsg):
+        if self.send_cnt == 0:
+            sendID = self.flaget_id(hexMsg)
+            self.ser.write(hexMsg)
+            self.send_cnt += 1
+        if self.send_cnt != 0:
+            if sendID == self.ackID:
+                self.send_cnt = 0
+            else:
+                self.ser.write(hexMsg)
+                self.send_cnt += 1
+            if self.send_cnt > 15:
+                print 'msg sending failed'
 
     def send_tts(self, cmd, ttstxt):
         # TODO: Merge send_tts with aiui_ctrl_msg
         # Done!
         print 'making tts msg'
         acm = aiui_ctrl_msg('tts', action=cmd, text=ttstxt)
-        self.ser.write(acm.construct_hex(self.globalID))
+        print self.globalID
+        # self.ser.write(acm.construct_hex(self.globalID))
+        self.send_msg(acm.construct_hex(self.globalID))
         print 'tts msg sent'
         # t = array.array('B', [0xA5, 0x01,  # msg head & user ID
         #                       0x05,        # msg type
@@ -412,12 +440,24 @@ class COMThread(threading.Thread):
                 flag_read = self.ser.read()
                 if(len(flag_read) > 0):
                     flag_read += self.ser.read(6)
-                    if ord(flag_read[0]) == 165:  # Recv data, flag is 0xA5=165
-                        datalen = self.flagget_len(flag_read)
-                        if(datalen > 0 and datalen < 1024 * 1024):
-                            data_read = self.ser.read(datalen)
-                            self.ser.read()   # checkdata , just read and pass
+                    for i in flag_read:
+                        print i
+                    if ((ord(flag_read[0]) == 165) and
+                       (ord(flag_read[1]) == 1)):
+                        # Recv data, flag is A5 01
+                        dataLen = self.flagget_len(flag_read)
+                        dataType = flag_read[2]
+                        msgID = self.flagget_id(flag_read)
+                        if (dataType == 1):  # handshaking message
                             self.send_ok(flag_read, 0xff)
+                        elif (dataType == 255):  # confirmation message
+                            self.ackID = msgID
+                            self.send_cnt = 0
+                        elif (dataType == 4 and
+                              dataLen > 0 and
+                              dataLen < 1024 * 1024):
+                            data_read = self.ser.read(dataLen)
+                            self.ser.read()   # checkdata ,just read and pass
                             parsedMsg = self.parse_msg(flag_read, data_read)
                             # aiui config start
                             # cfg = aiui_ctrl_msg('aiui_cfg')
@@ -429,7 +469,7 @@ class COMThread(threading.Thread):
                                 if ('葡萄' in ''.join(parsedMsg.get_result())):
                                     print 'sending tts'
                                     self.send_tts('start', TTSText)
-                            print 'get one msg len=%d' % datalen
+                            print 'get one msg len=%d' % dataLen
             except serial.SerialException:
                 print 'serial.SerialException ERROR'
                 print traceback.format_exc()
@@ -439,6 +479,10 @@ class COMThread(threading.Thread):
         if self.ser.isOpen():
             self.ser.close()  # 串口关闭
         print "%s ends" % (self.getName())
+
+    # def my_tts(self):
+    #     print 'sending tts'
+    #     self.send_tts('start', TTSText)
 
     # 关闭串口线程
     def stop(self, timeout=None):
@@ -453,10 +497,12 @@ if __name__ == "__main__":
     th1 = COMThread()
     try:
         th1.start()
+        # time.sleep(5)
+        # th1.my_tts()
         time.sleep(20)
         th1.stop()
     except Exception, e:
         print e
 
-    if th1._stopevent.isSet():
-        th1.stop()
+    # if th1._stopevent.isSet():
+    #     th1.stop()
