@@ -6,7 +6,9 @@ AIUISerial.py:  Handling serial messages of AIUI,
                 including receiving and parsing data,
                 and sending ctrl msgs.
 '''
-
+# ros
+# import rospy
+# from std_msgs.msg import String
 import json
 import serial
 import threading
@@ -27,7 +29,7 @@ AIUIAppid = '583c10e6'
 AIUIKey = '2d8c2fa8a465b0dcbaca063e9493a2d9'
 AIUIScene = 'main'
 
-TTSText = '强大风云素质男生我的优秀，更新宝贝语音瞬间公里上午服务大部分批评一些广大你们的内地忘记，这样语言都不杭州济南工业多个能不能语文打印知名。'
+TTSText = 'hello'
 
 
 class MyPrettyPrinter(pprint.PrettyPrinter):
@@ -113,7 +115,8 @@ class aiui_msg_handler(object):  # 0x04
                     self.eventType = "eventResultIAT"
                     self.recogResult = [ws['cw'][0]['w']
                                         for ws in result['text']['ws']]
-                # elif self.sub is 'nlp':
+                elif self.sub is 'nlp':
+                    self.recogResult = result.get('text', None)
             elif eventType == 2:  # EVENT_ERROR
                 self.eventType = "eventError"
                 self.errorCode = arg1
@@ -326,7 +329,7 @@ class COMThread(threading.Thread):
         self.sendCnt = 0
         self.ackID = 0
         self.handshakeID = 0
-        self.handshakeIDLast = 0
+        self.handshakeIDLast = 1
         self.handshakeCnt = 0
         self.sendID = 0
         # 将串口定义为”/dev/xunfei，比特率为115200，超时0.4秒“
@@ -339,6 +342,14 @@ class COMThread(threading.Thread):
         #     aiuiCM = aiui_ctrl_msg('aiui_msg', msg_type='reset')
         #     aiuiCM.construct_hex(None, self.globalID)
 
+        # ros
+        # self.aiuiPub = rospy.Publisher('aiui', String, queue_size=10)
+        # rospy.loginfo('Started AIUI Listener')
+        # rospy.init_node('aiuiListner', anonymous=True, log_level=rospy.DEBUG) 
+        # rospy.on_shutdown(self.shutdown)
+        # rate = rospy.Rate(10)
+        # while not rospy.is_shutdown():
+
     def flagget_len(self, str):
         return ord(str[3]) + ((ord(str[4])) << 8)
 
@@ -346,40 +357,40 @@ class COMThread(threading.Thread):
         return ord(str[5]) + ((ord(str[6])) << 8)
 
     def send_ok(self, str, msgflag):
-        print 'try handshake'
+        print 'handsahkeCount:{}'.format(self.handshakeCnt)
         if self.handshakeCnt > 50:
             print 'handshake timeout'
+            self.handshakeCnt = 0
             self.stop()
+        # TODO: Merge send_ok with aiui_ctrl_msg
+        # acm = aiui_ctrl_msg('handshake')
+        # self.ser.write(acm.construct_hex(self.globalID))
+        t = array.array('B', [0xA5, 0x01,   # msg head & user ID
+                              msgflag,      # msg type
+                              0x04, 0x00,   # msg length
+                              0x00, 0x00,   # msg ID
+                              0xA5, 0x00,   # handshaking msg
+                              0x00, 0x00,   # handshaking msg
+                              0x00])        # checksum
+        if str is None:
+            self.globalID += 1
+            if self.globalID > 65535:
+                self.globalID = 1
+            t[5] = self.globalID & 0xff
+            t[6] = (self.globalID >> 8) & 0xff
         else:
-            # TODO: Merge send_ok with aiui_ctrl_msg
-            # acm = aiui_ctrl_msg('handshake')
-            # self.ser.write(acm.construct_hex(self.globalID))
-            t = array.array('B', [0xA5, 0x01,   # msg head & user ID
-                                  msgflag,      # msg type
-                                  0x04, 0x00,   # msg length
-                                  0x00, 0x00,   # msg ID
-                                  0xA5, 0x00,   # handshaking msg
-                                  0x00, 0x00,   # handshaking msg
-                                  0x00])        # checksum
-            if str is None:
-                self.globalID += 1
-                if self.globalID > 65535:
-                    self.globalID = 1
-                t[5] = self.globalID & 0xff
-                t[6] = (self.globalID >> 8) & 0xff
-            else:
-                t[5] = ord(str[5])
-                t[6] = ord(str[6])
-                self.globalID = t[5] + 255 * t[6]
-            self.handshakeID = t[5] + 255 * t[6]
-            if self.handshakeID == self.handshakeIDLast:
-                self.handshakeCnt += 1
-            else:
-                self.handshakeCnt = 0
-            self.handshakeIDLast = self.handshakeID
-            t[11] = (~sum(t) + 1) & 0xff
-            print ' '.join(format(b, '02x') for b in t.tolist())
-            self.ser.write(t)
+            t[5] = ord(str[5])
+            t[6] = ord(str[6])
+            # self.globalID = t[5] + 255 * t[6]
+        self.handshakeID = t[5] + 255 * t[6]
+        if self.handshakeID == self.handshakeIDLast:
+            self.handshakeCnt += 1
+        else:
+            self.handshakeCnt = 0
+        self.handshakeIDLast = self.handshakeID
+        t[11] = (~sum(t) + 1) & 0xff
+        print ' '.join(format(b, '02x') for b in t.tolist())
+        self.ser.write(t)
 
     def send_msg(self, hexMsg):
         if self.sendCnt == 0:
@@ -463,8 +474,6 @@ class COMThread(threading.Thread):
                 else:
                     print 'tts state err'
             return aiuiMsg
-        else:
-            return None
 
     def run(self):
         if self.ser is None:
@@ -485,13 +494,20 @@ class COMThread(threading.Thread):
                         print 'Len:' + str(dataLen)
                         print 'ID:' + str(self.msgID)
                         if (dataType == 1):  # handshaking message
+                            data_read = self.ser.read(dataLen)
+                            self.ser.read()
+                            print 'handshaking message'
                             self.send_ok(flag_read, 0xff)
                         elif (dataType == 255):  # confirmation message
+                            data_read = self.ser.read(dataLen)
+                            self.ser.read()
+                            print 'confirmation message'
                             self.handshakeID = self.msgID
                             self.handshakeCnt = 0
                         elif (dataType == 4 and
                               dataLen > 0 and
                               dataLen < 1024 * 1024):
+                            print 'other message'
                             data_read = self.ser.read(dataLen)
                             self.ser.read()   # checkdata ,just read and pass
                             parsedMsg = self.parse_msg(flag_read, data_read)
@@ -531,15 +547,13 @@ class COMThread(threading.Thread):
 
 
 if __name__ == "__main__":
-    th1 = COMThread()
     try:
+        th1 = COMThread()
         th1.start()
-        # time.sleep(5)
-        # th1.my_tts()
-        time.sleep(30)
+        time.sleep(20)
         th1.stop()
-    except Exception, e:
-        print e
+    except:
+        pass
 
     # if th1._stopevent.isSet():
     #     th1.stop()
