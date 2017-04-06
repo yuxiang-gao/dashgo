@@ -99,7 +99,7 @@ class aiui_msg_handler(object):  # 0x04
             # print content.keys()
             eventType = content.get('eventType', None)
             arg1 = content.get('arg1', None)
-            # arg2 = content['arg2']
+            arg2 = content['arg2']
             info = content.get('info', None)
             result = content.get('result', None)
             if eventType == 1:  # EVENT_RESULT
@@ -129,6 +129,11 @@ class aiui_msg_handler(object):  # 0x04
                 self.eventType = "eventSleep"
             elif eventType == 6:  # EVENT_VAD
                 self.eventType = "eventVAD"
+            elif eventType == 8:  # EVENT_CMD_RETURN
+                self.eventType = "eventCmdReturn"
+                self.cmdType = arg1
+                self.isSuccess = (arg2 == 0)
+                self.cmdInfo = info
             else:
                 print 'Wrong input for aiui_event'
         elif self.msgType is 'wifi_status':
@@ -230,8 +235,17 @@ class aiui_ctrl_msg(object):  # 0x05
             elif content.get('msg_type', None) == 'set_params':
                 self.msgContent['msg_type'] = 10
                 self.msgContent['params'] = content['params']
+            elif content.get('msg_type', None) == 'upload_lexicon':
+                self.msgContent['msg_type'] = 11
+                self.msgContent['params'] = content['params']
             elif content.get('msg_type', None) == 'send_log':
                 self.msgContent['msg_type'] = 12
+                self.msgContent['params'] = content['params']
+            elif content.get('msg_type', None) == 'build_grammer':
+                self.msgContent['msg_type'] = 16
+                self.msgContent['params'] = content['params']
+            elif content.get('msg_type', None) == 'update_local_lexicon':
+                self.msgContent['msg_type'] = 17
                 self.msgContent['params'] = content['params']
             else:
                 print 'Wrong input for aiui_msg'
@@ -303,8 +317,11 @@ class COMThread(threading.Thread):
         self._stopevent = threading.Event()
         self._stopevent.clear()
         self.globalID = 0
-        self.send_cnt = 0
+        self.sendCnt = 0
         self.ackID = 0
+        self.handshakeID = 0
+        self.handshakeCnt = 0
+        self.sendID = 0
         # 将串口定义为”/dev/xunfei，比特率为115200，超时0.4秒“
         self.ser = serial.Serial(port='/dev/tty.usbserial',
                                  baudrate=115200,
@@ -322,10 +339,11 @@ class COMThread(threading.Thread):
         return ord(str[5]) + ((ord(str[6])) << 8)
 
     def send_ok(self, str, msgflag):
-        if self.send_cnt > 10:
+        print 'try handshake'
+        if self.handshakeCnt > 20:
             self.stop()
         else:
-            self.send_cnt += 1
+            self.handshakeCnt += 1
             # TODO: Merge send_ok with aiui_ctrl_msg
             # acm = aiui_ctrl_msg('handshake')
             # self.ser.write(acm.construct_hex(self.globalID))
@@ -351,18 +369,22 @@ class COMThread(threading.Thread):
             self.ser.write(t)
 
     def send_msg(self, hexMsg):
-        if self.send_cnt == 0:
-            sendID = self.flaget_id(hexMsg)
+        if self.sendCnt == 0:
+            self.unsentMsg = hexMsg
+            self.sendID = self.flaget_id(hexMsg)
             self.ser.write(hexMsg)
-            self.send_cnt += 1
-        if self.send_cnt != 0:
-            if sendID == self.ackID:
-                self.send_cnt = 0
+            self.sendCnt += 1
+            self.sendSuccess = None
+        elif self.sendCnt < 10:
+            if self.sendID == self.msgID:
+                self.sendCnt = 0
+                self.sendSuccess = True
             else:
-                self.ser.write(hexMsg)
-                self.send_cnt += 1
-            if self.send_cnt > 15:
-                print 'msg sending failed'
+                self.sendSuccess = False
+                self.ser.write(self.unsentMsg)
+                self.sendCnt += 1
+        else:
+            print 'msg sending failed'
 
     def send_tts(self, cmd, ttstxt):
         # TODO: Merge send_tts with aiui_ctrl_msg
@@ -440,19 +462,20 @@ class COMThread(threading.Thread):
                 flag_read = self.ser.read()
                 if(len(flag_read) > 0):
                     flag_read += self.ser.read(6)
-                    for i in flag_read:
-                        print i
                     if ((ord(flag_read[0]) == 165) and
                        (ord(flag_read[1]) == 1)):
                         # Recv data, flag is A5 01
                         dataLen = self.flagget_len(flag_read)
-                        dataType = flag_read[2]
-                        msgID = self.flagget_id(flag_read)
+                        dataType = ord(flag_read[2])
+                        self.msgID = self.flagget_id(flag_read)
+                        print 'type:' + str(dataType)
+                        print 'Len:' + str(dataLen)
+                        print 'ID:' + str(self.msgID)
                         if (dataType == 1):  # handshaking message
                             self.send_ok(flag_read, 0xff)
                         elif (dataType == 255):  # confirmation message
-                            self.ackID = msgID
-                            self.send_cnt = 0
+                            self.handshakeID = self.msgID
+                            self.handshakeCnt = 0
                         elif (dataType == 4 and
                               dataLen > 0 and
                               dataLen < 1024 * 1024):
