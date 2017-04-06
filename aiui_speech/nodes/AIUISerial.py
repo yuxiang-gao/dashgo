@@ -26,7 +26,8 @@ __version__ = '1.1'
 AIUIAppid = '583c10e6'
 AIUIKey = '2d8c2fa8a465b0dcbaca063e9493a2d9'
 AIUIScene = 'main'
-TTSText = 'hello hello hello'
+
+TTSText = '强大风云素质男生我的优秀，更新宝贝语音瞬间公里上午服务大部分批评一些广大你们的内地忘记，这样语言都不杭州济南工业多个能不能语文打印知名。'
 
 
 class MyPrettyPrinter(pprint.PrettyPrinter):
@@ -263,7 +264,7 @@ class aiui_ctrl_msg(object):  # 0x05
         elif aiuiCtrlType == 'tts':
             # aiui_ctrl_msg('tts', action='start', text='')
             if content['action'] == 'start':
-                ttsMsg = {'action': 'start', 'text': self.text}
+                ttsMsg = {'action': 'start', 'text': content.get('text', None)}
             else:
                 ttsMsg = {'action': 'stop'}
             #ttsMsg = tts_msg(content['action'], content.get('text', None))
@@ -346,7 +347,7 @@ class COMThread(threading.Thread):
 
     def send_ok(self, str, msgflag):
         print 'try handshake'
-        if self.handshakeCnt > 20:
+        if self.handshakeCnt > 50:
             print 'handshake timeout'
             self.stop()
         else:
@@ -404,8 +405,7 @@ class COMThread(threading.Thread):
         print 'making tts msg'
         acm = aiui_ctrl_msg('tts', action=cmd, text=ttstxt)
         print 'send_tts ID:' + str(self.globalID)
-        # self.ser.write(acm.construct_hex(self.globalID))
-        self.ser.write(acm.msgContent)
+        self.ser.write(acm.construct_hex(self.globalID))
         # self.send_msg(acm.construct_hex(self.globalID))
         print 'tts msg sent'
         # t = array.array('B', [0xA5, 0x01,  # msg head & user ID
