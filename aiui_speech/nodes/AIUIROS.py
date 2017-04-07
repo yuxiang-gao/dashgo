@@ -2,9 +2,12 @@
 # -*_ coding:utf-8 _*_
 
 '''
-AIUISerial.py:  Handling serial messages of AIUI,
-                including receiving and parsing data,
-                and sending ctrl msgs.
+publish:
+    /AIUI/result topic: output iat result
+    /AIUI/angle topic: out put wakeup angle
+    /AIUI/
+subscribe:
+    location
 '''
 import rospy
 from std_msgs.msg import String
@@ -30,7 +33,7 @@ AIUIKey = '2d8c2fa8a465b0dcbaca063e9493a2d9'
 AIUIScene = 'main'
 
 
-class AIUIROS:
+class AIUI_ROS:
     def __init__(self):
         rospy.init_node('AIUI', log_level=rospy.DEBUG)
 
@@ -51,6 +54,9 @@ class AIUIROS:
         # start the message publisher
         self.aiuiPub = rospy.Publisher('aiuiMsg', String, queue_size=10)
         rospy.loginfo('Started AIUI Listener')
+
+        # Reserve a thread lock
+        mutex = thread.allocate_lock()
 
 
 
