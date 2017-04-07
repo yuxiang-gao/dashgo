@@ -3,7 +3,7 @@
 
 '''
 publish:
-    /AIUI/result topic: output iat result
+    /AIUI/nav_cmd topic: output iat result
     /AIUI/angle topic: out put wakeup angle
     /AIUI/
 subscribe:
@@ -57,6 +57,9 @@ class AIUI_ROS:
 
         # Reserve a thread lock
         mutex = thread.allocate_lock()
+
+        # Start receiving aiui serial
+        while not rospy.is_shutdown():
 
 
 
