@@ -85,7 +85,7 @@ class aiui_msg_handler(object):  # 0x04
             # print content.keys()
             eventType = content.get('eventType', None)
             arg1 = content.get('arg1', None)
-            arg2 = content['arg2']
+            arg2 = content.get('arg2', None)
             info = content.get('info', None)
             result = content.get('result', None)
             if eventType == 1:  # EVENT_RESULT
