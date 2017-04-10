@@ -3,7 +3,7 @@
 
 '''
 publish:
-    /AIUI/nav_cmd topic: output iat result
+    /AIUI/nav_cmd topic: output cmd for navigation
     /AIUI/angle topic: out put wakeup angle
     /AIUI/
 subscribe:
