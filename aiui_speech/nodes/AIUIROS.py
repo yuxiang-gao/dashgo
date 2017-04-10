@@ -328,11 +328,11 @@ class AIUI_ROS:
         r = rospy.Rate(self.rate)
 
         # start the message publisher
-        self.aiuiPub = rospy.Publisher('aiui_msg', String, queue_size=3)
+        self.aiuiPub = rospy.Publisher('aiui_msg', String, queue_size=10)
         rospy.loginfo('Started AIUI publisher')
 
         # start the cmd message publisher
-        self.navCmd = rospy.Publisher('nav_cmd', String, queue_size=3)
+        self.navCmd = rospy.Publisher('nav_cmd', String, queue_size=10)
         rospy.loginfo('Started nav_cmd publisher')
 
         # Subscribe to the curr_loc
