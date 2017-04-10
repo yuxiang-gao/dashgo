@@ -45,7 +45,7 @@ class VoiceNav:
         self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=5)
 
         # Subscribe to the /recognizer/output topic to receive voice commands.
-        rospy.Subscriber('/AIUI/nav_cmd', String, self.speech_callback)
+        rospy.Subscriber('/AIUI_ROS/nav_cmd', String, self.speech_callback)
 
         # A mapping from keywords or phrases to commands
         self.keywords_to_command = {'stop': ['stop', 'halt'],

@@ -74,10 +74,10 @@ class NavTest():
 
         # Publisher to manually control the robot (e.g. to stop it,
         # queue_size=5)
-        self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=5)
+        self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
 
         # Pub the current location
-         = rospy.Publisher('curr_loc', String, queue_size=3)
+        self.currLoc = rospy.Publisher('curr_loc', String, queue_size=10)
 
         # Subscribe to the move_base action server
         self.move_base = actionlib.SimpleActionClient(
