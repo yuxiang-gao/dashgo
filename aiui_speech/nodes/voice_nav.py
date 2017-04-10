@@ -48,11 +48,11 @@ class VoiceNav:
         rospy.Subscriber('/AIUI_ROS/nav_cmd', String, self.speech_callback)
 
         # A mapping from keywords or phrases to commands
-        self.keywords_to_command = {'stop': ['stop', 'halt'],
-                                    'slower': ['slow down', 'slower'],
-                                    'faster': ['speed up', 'faster'],
-                                    'forward': ['forward', 'ahead', 'straight'],
-                                    'backward': ['back', 'backward', 'back up'],
+        self.keywords_to_command = {'stop': ['stop'],
+                                    'slower': ['slower'],
+                                    'faster': ['faster'],
+                                    'forward': ['forward'],
+                                    'backward': ['backward'],
                                     'rotate left': ['rotate left'],
                                     'rotate right': ['rotate right'],
                                     'turn left': ['turn left'],

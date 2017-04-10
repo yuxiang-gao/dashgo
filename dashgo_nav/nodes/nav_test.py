@@ -59,17 +59,24 @@ class NavTest():
         route = list()
 
         locations['loc_1'] = Pose(
-            Point(0.643, 4.720, 0.000), Quaternion(0.000, 0.000, 0.223, 0.975))
+            Point(0.643, 4.720, 0.000),
+            Quaternion(0.000, 0.000, 0.223, 0.975))
         locations['loc_2'] = Pose(
-            Point(-1.994, 4.382, 0.000), Quaternion(0.000, 0.000, -0.670, 0.743))
+            Point(-1.994, 4.382, 0.000),
+            Quaternion(0.000, 0.000, -0.670, 0.743))
         locations['loc_3'] = Pose(
-            Point(-3.719, 4.401, 0.000), Quaternion(0.000, 0.000, 0.733, 0.680))
+            Point(-3.719, 4.401, 0.000),
+            Quaternion(0.000, 0.000, 0.733, 0.680))
         locations['loc_4'] = Pose(
-            Point(0.720, 2.229, 0.000), Quaternion(0.000, 0.000, 0.786, 0.618))
+            Point(0.720, 2.229, 0.000),
+            Quaternion(0.000, 0.000, 0.786, 0.618))
         locations['loc_5'] = Pose(
-            Point(1.471, 1.007, 0.000), Quaternion(0.000, 0.000, 0.480, 0.877))
+            Point(1.471, 1.007, 0.000),
+            Quaternion(0.000, 0.000, 0.480, 0.877))
         locations['loc_6'] = Pose(
-            Point(-0.861, -0.019, 0.000), Quaternion(0.000, 0.000, 0.892, -0.451))
+            Point(-0.861, -0.019, 0.000),
+            Quaternion(0.000, 0.000, 0.892, -0.451))
+
         route = ['loc_1', 'loc_2', 'loc_3', 'loc_4', 'loc_5', 'loc_6']
 
         # Publisher to manually control the robot (e.g. to stop it,
@@ -93,6 +100,8 @@ class NavTest():
         # A variable to hold the initial pose of the robot to be set by
         # the user in RViz
         initial_pose = PoseWithCovarianceStamped()
+
+        self.currLoc.publich('loc_0')
 
         # Variables to keep track of success rate, running time,
         # and distance traveled

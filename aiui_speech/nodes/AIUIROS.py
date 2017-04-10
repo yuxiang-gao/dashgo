@@ -34,13 +34,6 @@ AIUIAppid = '583c10e6'
 AIUIKey = '2d8c2fa8a465b0dcbaca063e9493a2d9'
 AIUIScene = 'main'
 
-TTSText = {'loc_1': '',
-           'loc_2': '',
-           'loc_3': '',
-           'loc_4': '',
-           'loc_5': '',
-           'loc_6': ''}
-
 
 def json_load_byteified(file_handle):
     return _byteify(
@@ -341,6 +334,29 @@ class AIUI_ROS:
         # Reserve a thread lock
         self.mutex = thread.allocate_lock()
 
+        self.keywords_to_command = {'stop': ['停止'],
+                                    'slower': ['减速', '慢行'],
+                                    'faster': ['加速', '加快'],
+                                    'forward': ['向前', '前进', '直行'],
+                                    'backward': ['向后', '后退', '退后'],
+                                    'rotate left': ['左旋'],
+                                    'rotate right': ['右旋'],
+                                    'turn left': ['左转'],
+                                    'turn right': ['右转'],
+                                    'quarter': ['quarter speed'],
+                                    'half': ['half speed'],
+                                    'full': ['full speed'],
+                                    'pause': ['pause speech'],
+                                    'continue': ['continue speech']}
+        # Intro for each loaction
+        self.TTSText = {'loc_0': '',
+                        'loc_1': '',
+                        'loc_2': '',
+                        'loc_3': '',
+                        'loc_4': '',
+                        'loc_5': '',
+                        'loc_6': ''}
+
         # Start receiving aiui serial
         while not rospy.is_shutdown():
             if self.ser is None:
@@ -376,7 +392,7 @@ class AIUI_ROS:
                             rospy.loginfo('other message')
                             data_read = self.ser.read(dataLen)
                             self.ser.read()   # checkdata ,just read and pass
-                            self.parsedMsg = self.parse_msg(flag_read, data_read)
+                            parsedMsg = self.parse_msg(flag_read, data_read)
                             print 'get one msg len=%d' % dataLen
             except serial.SerialException:
                 rospy.loginfo('serial.SerialException ERROR')
@@ -388,10 +404,22 @@ class AIUI_ROS:
             self.ser.close()  # 串口关闭
         print "%s ends" % (self.getName())
 
+    def get_command(self, data):
+        """
+        Attempt to match the recognized word or phrase to the
+        keywords_to_command dictionary and return the appropriate
+        command
+        """
+        for (command, keywords) in self.keywords_to_command.iteritems():
+            for word in keywords:
+                if word in data:
+                    self.navCmd.publish(command)
+                    return command
+
     def loc_callback(self, currLoc):
         """Callback function for subscription to current location"""
         self.currLoc = currLoc
-        self.send_tts('start', TTSText[self.currLoc])
+        self.send_tts('start', self.TTSText[self.currLoc])
 
     def flagget_len(self, str):
         """Get AIUI message lenth"""
@@ -475,6 +503,8 @@ class AIUI_ROS:
                 elif aiuiMsg.get_type() == 'eventResultIAT':
                     rospy.loginfo('IAT result: ' +
                                   ''.join(aiuiMsg.get_result()))
+                    # Check if their is command word in recognized result
+                    command = self.get_command(''.join(aiuiMsg.get_result()))
             elif aiuiMsg.get_msg_type() == 'tts_event':
                 if aiuiMsg.get_tts_state():
                     rospy.loginfo('tts start')
