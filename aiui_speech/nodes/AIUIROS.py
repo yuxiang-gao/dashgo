@@ -335,15 +335,15 @@ class AIUI_ROS:
         # Reserve a thread lock
         self.mutex = thread.allocate_lock()
 
-        self.keywords_to_command = {'stop': ['停止', '停', 'stop', 'halt'],
+        self.keywords_to_command = {'stop': ['停止', '暂停', 'stop', 'halt'],
                                     'slower': ['减速', '慢行'],
                                     'faster': ['加速', '加快'],
                                     'forward': ['向前', '前进', '直行'],
                                     'backward': ['向后', '后退', '退后'],
                                     'rotate left': ['左旋'],
                                     'rotate right': ['右旋'],
-                                    'turn left': ['左转'],
-                                    'turn right': ['右转'],
+                                    'turn left': ['左转', '向左'],
+                                    'turn right': ['右转', '向右'],
                                     'quarter': ['quarter speed'],
                                     'half': ['half speed'],
                                     'full': ['full speed'],
