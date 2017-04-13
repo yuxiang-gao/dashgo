@@ -305,7 +305,7 @@ class AIUI_ROS:
         self.sendID = 0
 
         rospy.init_node('AIUI_ROS', log_level=rospy.DEBUG)
-
+        rospy.loginfo('Started AIUI node')
         # Cleanup when termniating the node
         rospy.on_shutdown(self.shutdown)
 
@@ -519,7 +519,5 @@ if __name__ == "__main__":
     try:
         AIUI_ROS()
         rospy.spin()
-    except:
-        pass
-
-
+    except rospy.ROSInterruptException:
+        rospy.loginfo("Voice navigation terminated.")
