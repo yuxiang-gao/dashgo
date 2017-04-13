@@ -303,6 +303,7 @@ class AIUI_ROS:
         self.handshakeIDLast = 1
         self.handshakeCnt = 0
         self.sendID = 0
+        self.name = name
 
         rospy.init_node('AIUI_ROS', log_level=rospy.DEBUG)
         rospy.loginfo('Started AIUI node')
@@ -334,7 +335,7 @@ class AIUI_ROS:
         # Reserve a thread lock
         self.mutex = thread.allocate_lock()
 
-        self.keywords_to_command = {'stop': ['停止'],
+        self.keywords_to_command = {'stop': ['停止', '停', 'stop', 'halt'],
                                     'slower': ['减速', '慢行'],
                                     'faster': ['加速', '加快'],
                                     'forward': ['向前', '前进', '直行'],
@@ -372,9 +373,9 @@ class AIUI_ROS:
                         dataLen = self.flagget_len(flag_read)
                         dataType = ord(flag_read[2])
                         self.msgID = self.flagget_id(flag_read)
-                        rospy.loginfo('type:' + str(dataType))
-                        rospy.loginfo('Len:' + str(dataLen))
-                        rospy.loginfo('ID:' + str(self.msgID))
+                        rospy.logdebug('type:' + str(dataType))
+                        rospy.logdebug('Len:' + str(dataLen))
+                        rospy.logdebug('ID:' + str(self.msgID))
                         if (dataType == 1):  # handshaking message
                             data_read = self.ser.read(dataLen)
                             self.ser.read()
@@ -394,7 +395,7 @@ class AIUI_ROS:
                             self.ser.read()   # checkdata ,just read and pass
                             parsedMsg = self.parse_msg(flag_read, data_read)
                             print 'get one msg len=%d' % dataLen
-            except serial.SerialException:
+            except SerialException:
                 rospy.loginfo('serial.SerialException ERROR')
                 rospy.loginfo(traceback.format_exc())
                 self.ser.close()
@@ -403,6 +404,10 @@ class AIUI_ROS:
         if self.ser.isOpen():
             self.ser.close()  # 串口关闭
         print "%s ends" % (self.getName())
+
+    def getName(self):
+        """return node name"""
+        return self.name
 
     def get_command(self, data):
         """
@@ -503,7 +508,7 @@ class AIUI_ROS:
                 elif aiuiMsg.get_type() == 'eventResultIAT':
                     rospy.loginfo('IAT result: ' +
                                   ''.join(aiuiMsg.get_result()))
-                    # Check if their is command word in recognized result
+                    # Check if there is command word in recognized result
                     command = self.get_command(''.join(aiuiMsg.get_result()))
             elif aiuiMsg.get_msg_type() == 'tts_event':
                 if aiuiMsg.get_tts_state():
@@ -518,6 +523,7 @@ class AIUI_ROS:
     # On shutdown termiate serial
         if self.ser.isOpen():
             self.ser.close()
+        print "%s ends" % (self.getName())
 
 
 if __name__ == "__main__":
