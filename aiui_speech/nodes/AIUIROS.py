@@ -350,19 +350,21 @@ class AIUI_ROS:
                                     'pause': ['pause speech'],
                                     'continue': ['continue speech']}
         # Intro for each loaction
-        self.TTSText = {'loc_0': '',
-                        'loc_1': '',
-                        'loc_2': '',
-                        'loc_3': '',
-                        'loc_4': '',
-                        'loc_5': '',
-                        'loc_6': ''}
+        self.TTSText = {'loc_0': '吃葡萄',
+                        'loc_1': '吃葡萄不吐',
+                        'loc_2': '吃葡萄不吐葡萄皮',
+                        'loc_3': '吃葡萄不吐葡',
+                        'loc_4': '吃葡萄不',
+                        'loc_5': '吃葡',
+                        'loc_6': '吃葡萄不吐葡萄',
+                        'end': 'end',
+                        'timeout': 'timeout'}
 
         # Start receiving aiui serial
         while not rospy.is_shutdown():
             if self.ser is None:
                 return
-            rospy.loginfo('%s starts' % (self.getName()))
+            # rospy.loginfo('%s starts' % (self.getName()))
             try:
                 flag_read = self.ser.read()
                 if(len(flag_read) > 0):
@@ -421,10 +423,11 @@ class AIUI_ROS:
                     self.navCmd.publish(command)
                     return command
 
-    def loc_callback(self, currLoc):
+    def loc_callback(self, data):
         """Callback function for subscription to current location"""
-        self.currLoc = currLoc
-        self.send_tts('start', self.TTSText[self.currLoc])
+        currLoc = data.data
+        rospy.loginfo('current location: %s', currLoc)
+        self.send_tts('start', self.TTSText[currLoc])
 
     def flagget_len(self, str):
         """Get AIUI message lenth"""
@@ -440,7 +443,7 @@ class AIUI_ROS:
         if self.handshakeCnt > 50:
             rospy.loginfo('handshake timeout')
             self.handshakeCnt = 0
-            self.stop()
+            self.cleanup()
         # TODO: Merge send_ok with aiui_ctrl_msg
         # acm = aiui_ctrl_msg('handshake')
         # self.ser.write(acm.construct_hex(self.globalID))
@@ -474,11 +477,12 @@ class AIUI_ROS:
     def send_tts(self, cmd, ttstxt):
         """Send TTS message"""
         acm = aiui_ctrl_msg('tts', action=cmd, text=ttstxt)
+        rospy.loginfo('tts start: %s', ttstxt)
         # print 'send_tts ID:' + str(self.globalID)
         self.mutex.acquire()
         self.ser.write(acm.construct_hex(self.globalID))
         self.mutex.release()
-        rospy.loginfo('tts msg sent')
+        rospy.loginfo('tts msg sent with id: %d', self.globalID)
 
     def parse_msg(self, flag, data):
         """Parse AIUI message"""
