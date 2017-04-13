@@ -478,7 +478,7 @@ class AIUI_ROS:
         """Send TTS message"""
         acm = aiui_ctrl_msg('tts', action=cmd, text=ttstxt)
         rospy.loginfo('tts start: %s', ttstxt)
-        # print 'send_tts ID:' + str(self.globalID)
+        print 'send_tts ID:' + str(self.globalID)
         self.mutex.acquire()
         self.ser.write(acm.construct_hex(self.globalID))
         self.mutex.release()

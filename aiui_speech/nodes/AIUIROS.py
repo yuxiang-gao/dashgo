@@ -463,7 +463,7 @@ class AIUI_ROS:
         else:
             t[5] = ord(str[5])
             t[6] = ord(str[6])
-            # self.globalID = t[5] + 255 * t[6]
+            self.globalID = t[5] + 255 * t[6]
         self.handshakeID = t[5] + 255 * t[6]
         if self.handshakeID == self.handshakeIDLast:
             self.handshakeCnt += 1
@@ -478,7 +478,7 @@ class AIUI_ROS:
         """Send TTS message"""
         acm = aiui_ctrl_msg('tts', action=cmd, text=ttstxt)
         rospy.loginfo('tts start: %s', ttstxt)
-        # print 'send_tts ID:' + str(self.globalID)
+        print 'send_tts ID:' + str(self.globalID)
         self.mutex.acquire()
         self.ser.write(acm.construct_hex(self.globalID))
         self.mutex.release()
