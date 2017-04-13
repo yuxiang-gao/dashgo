@@ -307,7 +307,7 @@ class AIUI_ROS:
         rospy.init_node('AIUI_ROS', log_level=rospy.DEBUG)
         rospy.loginfo('Started AIUI node')
         # Cleanup when termniating the node
-        rospy.on_shutdown(self.shutdown)
+        rospy.on_shutdown(self.cleanup)
 
         # start serial port
         self.ser = Serial(port='/dev/xunfei',
@@ -513,6 +513,10 @@ class AIUI_ROS:
                 else:
                     rospy.loginfo('tts state err')
             return aiuiMsg
+    def cleanup(self):
+    # On shutdown termiate serial
+        if self.ser.isOpen():
+            self.ser.close()
 
 
 if __name__ == "__main__":

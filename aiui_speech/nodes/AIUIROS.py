@@ -513,9 +513,10 @@ class AIUI_ROS:
                 else:
                     rospy.loginfo('tts state err')
             return aiuiMsg
+
     def cleanup(self):
-        # On shutdown termiate serial
-		if self.ser.isOpen():
+    # On shutdown termiate serial
+        if self.ser.isOpen():
             self.ser.close()
 
 
