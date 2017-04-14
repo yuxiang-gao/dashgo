@@ -10,8 +10,7 @@
   <!--node name="map_server" pkg="map_server" type="map_server" args="$(find dashgo_nav)/maps/$(arg map)"/-->
 
   <!-- Fire up AMCL -->
-  <!--include file="$(find rbx1_nav)/launch/tb_amcl.launch" /-->
-  <include file="$(find dashgo_nav)/launch/teb_amcl_demo.launch" />
+  <!--include file="$(find dashgo_nav)/launch/teb_amcl_demo.launch" /-->
 
   <!-- Start the navigation test -->
   <node pkg="dashgo_nav" type="nav_test.py" name="nav_test" output="screen">
