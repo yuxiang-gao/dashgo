@@ -60,11 +60,11 @@ class NavTest():
         route = list()
 
         locations['loc_1'] = Pose(
-            Point(0.643, 4.720, 0.000),
-            Quaternion(0.000, 0.000, 0.223, 0.975))
+            Point(-0.917, 5.665, 0.000),
+            Quaternion(0.000, 0.000, 0.478, 0.879))
         locations['loc_2'] = Pose(
-            Point(-1.994, 4.382, 0.000),
-            Quaternion(0.000, 0.000, -0.670, 0.743))
+            Point(0.730, 7.884, 0.000),
+            Quaternion(0.000, 0.000, 0.948, 0.317))
         locations['loc_3'] = Pose(
             Point(-3.719, 4.401, 0.000),
             Quaternion(0.000, 0.000, 0.733, 0.680))
@@ -78,7 +78,8 @@ class NavTest():
             Point(-0.861, -0.019, 0.000),
             Quaternion(0.000, 0.000, 0.892, -0.451))
 
-        route = ['loc_1', 'loc_2', 'loc_3', 'loc_4', 'loc_5', 'loc_6']
+        # route = ['loc_1', 'loc_2', 'loc_3', 'loc_4', 'loc_5', 'loc_6']
+	route = ['loc_1', 'loc_2']
 
         # Publisher to manually control the robot (e.g. to stop it,
         # queue_size=5)

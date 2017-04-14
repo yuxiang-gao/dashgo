@@ -188,7 +188,7 @@ class NavTest():
                         rospy.loginfo("Goal succeeded!")
                         n_successes += 1
                         distance_traveled += distance
-                        self.curr_loc_pub.publish(location)  # pub info for AIUI
+                        self.currLoc.publish(location)  # pub info for AIUI
                         rospy.loginfo("State:" + str(state))
                     else:
                         rospy.loginfo(
