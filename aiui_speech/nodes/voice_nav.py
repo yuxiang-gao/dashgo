@@ -134,24 +134,24 @@ class VoiceNav:
             self.cmd_vel = Twist()
 
         elif command == 'faster':
-            self.speed += self.linear_increment
-            self.angular_speed += self.angular_increment
+            self.speed += self.linear_increment/3
+            self.angular_speed += self.angular_increment/3
             if self.cmd_vel.linear.x != 0:
                 self.cmd_vel.linear.x += copysign(
-                    self.linear_increment, self.cmd_vel.linear.x)
+                    self.linear_increment, self.cmd_vel.linear.x)/3
             if self.cmd_vel.angular.z != 0:
                 self.cmd_vel.angular.z += copysign(
-                    self.angular_increment, self.cmd_vel.angular.z)
+                    self.angular_increment, self.cmd_vel.angular.z)/3
 
         elif command == 'slower':
-            self.speed -= self.linear_increment
-            self.angular_speed -= self.angular_increment
+            self.speed -= self.linear_increment/3
+            self.angular_speed -= self.angular_increment/3
             if self.cmd_vel.linear.x != 0:
                 self.cmd_vel.linear.x -= copysign(
-                    self.linear_increment, self.cmd_vel.linear.x)
+                    self.linear_increment, self.cmd_vel.linear.x)/3
             if self.cmd_vel.angular.z != 0:
                 self.cmd_vel.angular.z -= copysign(
-                    self.angular_increment, self.cmd_vel.angular.z)
+                    self.angular_increment, self.cmd_vel.angular.z)/3
 
         elif command in ['quarter', 'half', 'full']:
             if command == 'quarter':

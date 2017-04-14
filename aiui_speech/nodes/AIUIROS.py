@@ -3,9 +3,10 @@
 
 '''
 publish:
-    /AIUI/nav_cmd topic: output cmd for navigation
-    /AIUI/angle topic: out put wakeup angle
-    /AIUI/
+    nav_cmd topic: output cmd for navigation
+    beam_angle topic: out put wakeup angle
+    aiui_msg
+    
 subscribe:
     location
 '''
@@ -326,7 +327,7 @@ class AIUI_ROS:
         rospy.loginfo('Started AIUI publisher')
 
         # start the cmd message publisher
-        self.navCmd = rospy.Publisher('nav_cmd', String, queue_size=10)
+        self.navCmd = rospy.Publisher('nav_cmd', String, queue_size=1)
         rospy.loginfo('Started nav_cmd publisher')
 
         # Subscribe to the curr_loc

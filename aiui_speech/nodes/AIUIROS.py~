@@ -3,9 +3,10 @@
 
 '''
 publish:
-    /AIUI/nav_cmd topic: output cmd for navigation
-    /AIUI/angle topic: out put wakeup angle
-    /AIUI/
+    nav_cmd topic: output cmd for navigation
+    beam_angle topic: out put wakeup angle
+    aiui_msg
+    
 subscribe:
     location
 '''
@@ -463,7 +464,7 @@ class AIUI_ROS:
         else:
             t[5] = ord(str[5])
             t[6] = ord(str[6])
-            # self.globalID = t[5] + 255 * t[6]
+            self.globalID = t[5] + 255 * t[6]
         self.handshakeID = t[5] + 255 * t[6]
         if self.handshakeID == self.handshakeIDLast:
             self.handshakeCnt += 1

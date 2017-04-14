@@ -45,7 +45,7 @@ class VoiceNav:
         self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=5)
 
         # Subscribe to the /recognizer/output topic to receive voice commands.
-        rospy.Subscriber('nav_cmd', String, self.speech_callback)
+        rospy.Subscriber('/nav_cmd', String, self.speech_callback)
 
         # A mapping from keywords or phrases to commands
         self.keywords_to_command = {'stop': ['stop'],
@@ -134,24 +134,24 @@ class VoiceNav:
             self.cmd_vel = Twist()
 
         elif command == 'faster':
-            self.speed += self.linear_increment
-            self.angular_speed += self.angular_increment
+            self.speed += self.linear_increment/3
+            self.angular_speed += self.angular_increment/3
             if self.cmd_vel.linear.x != 0:
                 self.cmd_vel.linear.x += copysign(
-                    self.linear_increment, self.cmd_vel.linear.x)
+                    self.linear_increment, self.cmd_vel.linear.x)/3
             if self.cmd_vel.angular.z != 0:
                 self.cmd_vel.angular.z += copysign(
-                    self.angular_increment, self.cmd_vel.angular.z)
+                    self.angular_increment, self.cmd_vel.angular.z)/3
 
         elif command == 'slower':
-            self.speed -= self.linear_increment
-            self.angular_speed -= self.angular_increment
+            self.speed -= self.linear_increment/3
+            self.angular_speed -= self.angular_increment/3
             if self.cmd_vel.linear.x != 0:
                 self.cmd_vel.linear.x -= copysign(
-                    self.linear_increment, self.cmd_vel.linear.x)
+                    self.linear_increment, self.cmd_vel.linear.x)/3
             if self.cmd_vel.angular.z != 0:
                 self.cmd_vel.angular.z -= copysign(
-                    self.angular_increment, self.cmd_vel.angular.z)
+                    self.angular_increment, self.cmd_vel.angular.z)/3
 
         elif command in ['quarter', 'half', 'full']:
             if command == 'quarter':
