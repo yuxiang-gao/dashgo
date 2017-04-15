@@ -8,12 +8,20 @@ Default Branch: slam_02
 
 ## Prerequisites
 
-Omitted
+Omitted, use the pre-configured virtual machine.
+
+
+
+User: Parallels
+
+pw: eaibot
 
 ## GMapping
 
 ```
+# on dashgo
 roslaunch dashgo_nav gmapping_demo.launch
+# on the computer
 rosrun dashgo_bringup teleop_twist_keyboard.py
 roslaunch turtlebot_rviz_launchers view_navigation.launch
 ```
