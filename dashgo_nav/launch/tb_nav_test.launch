@@ -4,7 +4,7 @@
   
   <!-- EDIT THIS LINE TO REFLECT THE NAME OF YOUR OWN MAP FILE 
        Can also be overridden on the command line -->
-  <arg name="map" default="my_map_1.yaml" />
+  <!--arg name="map" default="my_map_1.yaml" /-->
 
   <!-- Run the map server with the desired map -->
   <!--node name="map_server" pkg="map_server" type="map_server" args="$(find dashgo_nav)/maps/$(arg map)"/-->

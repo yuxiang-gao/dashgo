@@ -51,13 +51,13 @@ rosrun map_server map_saver -f my_map
 
    ​
 
-2. **AMCL** (Change the `map` file in the launch file if needed):
+2. **AMCL** :
 
    * Fire up the AMCL:
 
      `roslaunch dashgo_nav teb_amcl_demo.launch`
 
-   * To monitor in `rviz` (if you will proceed to the next step, this can be skipped):
+   * To monitor in `rviz` (Change the `map` file in the launch file if needed)(only for testing, if you need to navigate along a route, this can be skipped):
 
      ``rosrun rviz rviz -d `rospack find dashgo_nav`/rviz/amcl.rviz``
 
