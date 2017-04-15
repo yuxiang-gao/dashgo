@@ -1,0 +1,8 @@
+<launch>
+  <arg name="acpi_path" default="/sys/class/power_supply/BAT0" />
+  
+  <node pkg="laptop_battery_monitor" name="laptop_battery" type="laptop_battery.py" output="screen">
+     <param name="acpi_path" type="string" value="$(arg acpi_path)" />
+  </node>
+  
+</launch>
