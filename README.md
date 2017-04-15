@@ -88,7 +88,7 @@ rosrun map_server map_saver -f my_map
 
 ## Web GUI
 
-`roslaunch rbx2_gui rosbridge.launch`
+`roslaunch dashgo_gui rosbridge.launch`
 
 goto http://localhost:8181/robot_gui.html in the web browser on the local computer or use the ip address to access from any device in LAN. 			
 
