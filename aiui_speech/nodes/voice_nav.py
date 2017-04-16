@@ -13,7 +13,7 @@
 
 import rospy
 from geometry_msgs.msg import Twist
-from std_msgs.msg import String
+from std_msgs.msg import String, Int16
 from math import copysign
 
 
@@ -28,8 +28,8 @@ class VoiceNav:
         self.max_angular_speed = rospy.get_param("~max_angular_speed", 1.5)
         self.speed = rospy.get_param("~start_speed", 0.1)
         self.angular_speed = rospy.get_param("~start_angular_speed", 0.5)
-        self.linear_increment = rospy.get_param("~linear_increment", 0.05)
-        self.angular_increment = rospy.get_param("~angular_increment", 0.4)
+        self.linear_increment = rospy.get_param("~linear_increment", 0.05 / 3.0)
+        self.angular_increment = rospy.get_param("~angular_increment", 0.4 / 3.0)
 
         # We don't have to run the script very fast
         self.rate = rospy.get_param("~rate", 5)
@@ -117,13 +117,13 @@ class VoiceNav:
             if self.cmd_vel.linear.x != 0:
                 self.cmd_vel.angular.z += self.angular_increment
             else:
-                self.cmd_vel.angular.z = self.angular_speed
+                self.cmd_vel.angular.z = self.angular_speed / 3.0
 
         elif command == 'turn right':
             if self.cmd_vel.linear.x != 0:
                 self.cmd_vel.angular.z -= self.angular_increment
             else:
-                self.cmd_vel.angular.z = -self.angular_speed
+                self.cmd_vel.angular.z = -self.angular_speed / 3.0
 
         elif command == 'backward':
             self.cmd_vel.linear.x = -self.speed
@@ -134,24 +134,24 @@ class VoiceNav:
             self.cmd_vel = Twist()
 
         elif command == 'faster':
-            self.speed += self.linear_increment/3
-            self.angular_speed += self.angular_increment/3
+            self.speed += self.linear_increment
+            self.angular_speed += self.angular_increment
             if self.cmd_vel.linear.x != 0:
                 self.cmd_vel.linear.x += copysign(
-                    self.linear_increment, self.cmd_vel.linear.x)/3
+                    self.linear_increment, self.cmd_vel.linear.x)
             if self.cmd_vel.angular.z != 0:
                 self.cmd_vel.angular.z += copysign(
-                    self.angular_increment, self.cmd_vel.angular.z)/3
+                    self.angular_increment, self.cmd_vel.angular.z)
 
         elif command == 'slower':
-            self.speed -= self.linear_increment/3
-            self.angular_speed -= self.angular_increment/3
+            self.speed -= self.linear_increment
+            self.angular_speed -= self.angular_increment
             if self.cmd_vel.linear.x != 0:
                 self.cmd_vel.linear.x -= copysign(
-                    self.linear_increment, self.cmd_vel.linear.x)/3
+                    self.linear_increment, self.cmd_vel.linear.x)
             if self.cmd_vel.angular.z != 0:
                 self.cmd_vel.angular.z -= copysign(
-                    self.angular_increment, self.cmd_vel.angular.z)/3
+                    self.angular_increment, self.cmd_vel.angular.z)
 
         elif command in ['quarter', 'half', 'full']:
             if command == 'quarter':
@@ -175,9 +175,11 @@ class VoiceNav:
             return
 
         self.cmd_vel.linear.x = min(
-            self.max_speed, max(-self.max_speed, self.cmd_vel.linear.x))
+            self.max_speed,
+            max(-self.max_speed, self.cmd_vel.linear.x))
         self.cmd_vel.angular.z = min(
-            self.max_angular_speed, max(-self.max_angular_speed, self.cmd_vel.angular.z))
+            self.max_angular_speed,
+            max(-self.max_angular_speed, self.cmd_vel.angular.z))
 
     def cleanup(self):
         # When shutting down be sure to stop the robot!

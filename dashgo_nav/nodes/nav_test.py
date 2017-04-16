@@ -2,9 +2,11 @@
 
 """ nav_test.py - Version 1.1 2013-12-20
 
-    Command a robot to move autonomously among a number of goal locations defined in the map frame.
-    On each round, select a new random sequence of locations, then attempt to move to each location
-    in succession.  Keep track of success rate, time elapsed, and total distance traveled.
+    Command a robot to move autonomously among a number of goal
+    locations defined in the map frame. On each round, select a
+    new random sequence of locations, then attempt to move to each location
+    in succession.  Keep track of success rate, time elapsed, and total
+    distance traveled.
 
     Created for the Pi Robot Project: http://www.pirobot.org
     Copyright (c) 2012 Patrick Goebel.  All rights reserved.
@@ -28,7 +30,7 @@ import actionlib
 from actionlib_msgs.msg import *
 from geometry_msgs.msg import Pose, PoseWithCovarianceStamped, Point, Quaternion, Twist
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from random import sample
 from math import pow, sqrt
 
@@ -79,14 +81,17 @@ class NavTest():
             Quaternion(0.000, 0.000, 0.892, -0.451))
 
         # route = ['loc_1', 'loc_2', 'loc_3', 'loc_4', 'loc_5', 'loc_6']
-	route = ['loc_1', 'loc_2']
+        route = ['loc_1', 'loc_2']
 
-        # Publisher to manually control the robot (e.g. to stop it,
-        # queue_size=5)
+        # Publisher to manually control the robot
+        # e.g. to stop it
         self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
 
         # Pub the current location
-        self.currLoc = rospy.Publisher('curr_loc', String, queue_size=10)
+        self.currLoc = rospy.Publisher('curr_loc', String, queue_size=5)
+
+        # whether the robot is idle, pub for turn to visitor
+        self.robotIdle = rospy.Publisher('robot_idle', Bool, queue_size=1)
 
         # Subscribe to the move_base action server
         self.move_base = actionlib.SimpleActionClient(
@@ -137,6 +142,7 @@ class NavTest():
             # If we've gone through the current sequence,
             # start with a new random sequence
             if i < n_locations:
+                self.robotIdle.publish(False)
                 # Get the next location in the current route
                 location = route[i]
 
@@ -192,8 +198,8 @@ class NavTest():
                         self.currLoc.publish(location)  # pub info for AIUI
                         rospy.loginfo("State:" + str(state))
                     else:
-                        rospy.loginfo(
-                            "Goal failed with error code: " + str(goal_states[state]))
+                        rospy.loginfo("Goal failed with error code: " +
+                                      str(goal_states[state]))
 
                 # How long have we been running?
                 running_time = rospy.Time.now() - start_time
@@ -204,10 +210,14 @@ class NavTest():
                 rospy.loginfo("Success so far: " + str(n_successes) + "/" +
                               str(n_goals) + " = " +
                               str(100 * n_successes / n_goals) + "%")
-                rospy.loginfo("Running time: " + str(trunc(running_time, 1)) +
-                              " min Distance: " + str(trunc(distance_traveled, 1)) + " m")
+                rospy.loginfo("Running time: " +
+                              str(trunc(running_time, 1)) +
+                              " min Distance: " +
+                              str(trunc(distance_traveled, 1)) + " m")
+                self.robotIdle.publish(True)
                 rospy.sleep(self.rest_time)
             else:
+                self.robotIdle.publish(True)
                 self.currLoc.publish('end')
                 rospy.loginfo('Tour end')
 
@@ -227,9 +237,12 @@ def trunc(f, n):
     slen = len('%.*f' % (n, f))
     return float(str(f)[:slen])
 
+
 if __name__ == '__main__':
     try:
         NavTest()
         rospy.spin()
     except rospy.ROSInterruptException:
         rospy.loginfo("AMCL navigation test finished.")
+
+

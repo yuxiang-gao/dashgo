@@ -71,7 +71,7 @@ rosrun map_server map_saver -f my_map
 
        `roslaunch aiui_speech voice_nav_commands.launch`
 
-     * Start Command listener:
+     * Start Command listener and "turn to" function:
 
        `roslaunch aiui_speech dashgo_voice_nav.launch`
 

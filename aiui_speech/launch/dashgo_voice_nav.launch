@@ -9,4 +9,7 @@
   	<param name="angular_increment" value="0.4"/>
   </node>
 
+  <node name="turn_to_visitor" pkg="aiui_speech" type="turn_to_visitor.py" output="screen">
+  </node>
+
 </launch>

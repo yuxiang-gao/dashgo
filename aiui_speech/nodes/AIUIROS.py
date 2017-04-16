@@ -6,12 +6,12 @@ publish:
     nav_cmd topic: output cmd for navigation
     beam_angle topic: out put wakeup angle
     aiui_msg
-    
 subscribe:
-    location
+    curr_loc
+    reset_beam
 '''
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Int16
 import roslib
 
 import json
@@ -319,7 +319,7 @@ class AIUI_ROS:
             rospy.logerr('AIUI serial port init failed')
 
         # Overall loop rate
-        self.rate = int(rospy.get_param("~rate", 50))
+        self.rate = int(rospy.get_param("~rate", 20))
         r = rospy.Rate(self.rate)
 
         # start the message publisher
@@ -330,8 +330,15 @@ class AIUI_ROS:
         self.navCmd = rospy.Publisher('nav_cmd', String, queue_size=1)
         rospy.loginfo('Started nav_cmd publisher')
 
+        # start the cmd message publisher
+        self.beamAngle = rospy.Publisher('beam_angle', Int16, queue_size=1)
+        rospy.loginfo('Started beam_angle publisher')
+
         # Subscribe to the curr_loc
         rospy.Subscriber('curr_loc', String, self.loc_callback)
+
+        # Subscribe to the reset_beam
+        rospy.Subscriber('reset_beam', String, self.reset_beam)
 
         # Reserve a thread lock
         self.mutex = thread.allocate_lock()
@@ -430,6 +437,13 @@ class AIUI_ROS:
         rospy.loginfo('current location: %s', currLoc)
         self.send_tts('start', self.TTSText[currLoc])
 
+    def reset_beam(self, data):
+        msg = aiui_ctrl_msg('aiui_msg', msg_type='set_beam', arg1='2')
+        self.mutex.acquire()
+        self.ser.write(msg.construct_hex(self.globalID))
+        rospy.loginfo('beam reset')
+        self.mutex.release()
+
     def flagget_len(self, str):
         """Get AIUI message lenth"""
         return ord(str[3]) + ((ord(str[4])) << 8)
@@ -509,6 +523,7 @@ class AIUI_ROS:
             # rospy.loginfo(loadedJson)
             if aiuiMsg.get_msg_type() == 'aiui_event':
                 if aiuiMsg.get_type() == 'eventWakeup':
+                    self.beamAngle.publish(aiuiMsg.get_angle())
                     rospy.loginfo('wakeup angle: ' + str(aiuiMsg.get_angle()))
                 elif aiuiMsg.get_type() == 'eventResultIAT':
                     rospy.loginfo('IAT result: ' +
