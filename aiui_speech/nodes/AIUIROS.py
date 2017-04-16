@@ -338,7 +338,7 @@ class AIUI_ROS:
         rospy.Subscriber('curr_loc', String, self.loc_callback)
 
         # Subscribe to the reset_beam
-        rospy.Subscriber('reset_beam', String, self.reset_beam)
+        rospy.Subscriber('reset_beam', Int16, self.reset_beam)
 
         # Reserve a thread lock
         self.mutex = thread.allocate_lock()
@@ -438,7 +438,9 @@ class AIUI_ROS:
         self.send_tts('start', self.TTSText[currLoc])
 
     def reset_beam(self, data):
-        msg = aiui_ctrl_msg('aiui_msg', msg_type='set_beam', arg1='2')
+        msg = aiui_ctrl_msg('aiui_msg',
+                            msg_type='set_beam',
+                            arg1=str(data.data))
         self.mutex.acquire()
         self.ser.write(msg.construct_hex(self.globalID))
         rospy.loginfo('beam reset')

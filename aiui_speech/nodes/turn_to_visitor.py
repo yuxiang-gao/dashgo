@@ -41,6 +41,9 @@ class TurnToVisitor():
         # Publisher to control the robot's speed
         self.cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=5)
 
+        # Publisher to reset the beam number
+        self.resetBeam = rospy.Publisher('reset_beam', Int16, queue_size=1)
+
         # How fast will we update the robot's movement?
         rate = 20
 
@@ -103,6 +106,9 @@ class TurnToVisitor():
         # Track how far we have turned
         turn_angle = 0
 
+        # A flag to determine if it is ok to reset beam angle
+        looped = False
+
         while (self.enabled and
                abs(turn_angle + angular_tolerance) < abs(goal_angle) and
                not rospy.is_shutdown()):
@@ -119,6 +125,12 @@ class TurnToVisitor():
             # Add to the running total
             turn_angle += delta_angle
             last_angle = rotation
+            looped = True
+
+        # Reset beam number
+        if looped:
+            self.resetBeam.publish(2)
+            looped = False
 
         # Stop the robot before the next loop
         move_cmd = Twist()
