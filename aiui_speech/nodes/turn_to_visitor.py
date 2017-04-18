@@ -9,7 +9,7 @@ import rospy
 from geometry_msgs.msg import Twist, Point, Quaternion
 import tf
 from math import radians, pi
-from std_msgs.msg import Int16
+from std_msgs.msg import Int16, String
 import PyKDL
 
 
@@ -36,7 +36,7 @@ class TurnToVisitor():
         rospy.on_shutdown(self.shutdown)
 
         # A flag to determine whether or not turn_to_visitor is enabled
-        self.enabled = False
+        self.enabled = True
 
         # Publisher to control the robot's speed
         self.cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=5)
@@ -59,8 +59,8 @@ class TurnToVisitor():
         # Subscribe to the beam_angle topic to receive wake up angles.
         rospy.Subscriber('beam_angle', Int16, self.angle_callback)
 
-        # Subscribe to the robot_idle topic to receive wake up angles.
-        rospy.Subscriber('robot_idle', Int16, self.idle_callback)
+        # Subscribe to the robot_state topic to receive wake up angles.
+        rospy.Subscriber('robot_state', String, self.state_callback)
 
         # Set the rotation angle to Pi radians (180 degrees)
         goal_angle = (self.beamAngle - 180) / 180.0 * pi
@@ -151,8 +151,8 @@ class TurnToVisitor():
     def angle_callback(self, msg):
         self.beamAngle = msg.data
 
-    def idle_callback(self, msg):
-        if msg.data:
+    def state_callback(self, msg):
+        if msg.data == 'idle' or msg.data == 'end':
             self.enabled = True
         else:
             self.enabled = False

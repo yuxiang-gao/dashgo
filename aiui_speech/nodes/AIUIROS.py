@@ -340,6 +340,9 @@ class AIUI_ROS:
         # Subscribe to the reset_beam
         rospy.Subscriber('reset_beam', Int16, self.reset_beam)
 
+        # Subscribe to the robot_state topic to receive robot state info.
+        rospy.Subscriber('robot_state', String, self.state_callback)
+
         # Reserve a thread lock
         self.mutex = thread.allocate_lock()
 
@@ -430,6 +433,9 @@ class AIUI_ROS:
                 if word in data:
                     self.navCmd.publish(command)
                     return command
+
+    def state_callback(self, data):
+        self.robotState = msg.data
 
     def loc_callback(self, data):
         """Callback function for subscription to current location"""

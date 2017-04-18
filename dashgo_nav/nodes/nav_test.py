@@ -91,7 +91,7 @@ class NavTest():
         self.currLoc = rospy.Publisher('curr_loc', String, queue_size=5)
 
         # whether the robot is idle, pub for turn to visitor
-        self.robotIdle = rospy.Publisher('robot_idle', Bool, queue_size=1)
+        self.robotState = rospy.Publisher('robot_state', String, queue_size=1)
 
         # Subscribe to the move_base action server
         self.move_base = actionlib.SimpleActionClient(
@@ -122,6 +122,7 @@ class NavTest():
         running_time = 0
         location = ""
         last_location = ""
+        endSign = False
 
         # Get the initial pose from the user
         rospy.loginfo(
@@ -142,7 +143,7 @@ class NavTest():
             # If we've gone through the current sequence,
             # start with a new random sequence
             if i < n_locations:
-                self.robotIdle.publish(False)
+                self.robotState.publish('working')
                 # Get the next location in the current route
                 location = route[i]
 
@@ -214,12 +215,15 @@ class NavTest():
                               str(trunc(running_time, 1)) +
                               " min Distance: " +
                               str(trunc(distance_traveled, 1)) + " m")
-                self.robotIdle.publish(True)
+                self.robotState.publish('idle')
                 rospy.sleep(self.rest_time)
-            else:
-                self.robotIdle.publish(True)
+            elif not endSign:
+                endSign = True
+                self.robotState.publish('end')
                 self.currLoc.publish('end')
                 rospy.loginfo('Tour end')
+            else:
+                pass
 
     def update_initial_pose(self, initial_pose):
         self.initial_pose = initial_pose
