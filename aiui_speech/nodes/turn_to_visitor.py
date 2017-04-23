@@ -108,29 +108,28 @@ class TurnToVisitor():
 
         # A flag to determine if it is ok to reset beam angle
         looped = False
+        while not rospy.is_shutdown():
+            while (self.enabled and
+                   abs(turn_angle + angular_tolerance) < abs(goal_angle)):
+                # Publish the Twist message and sleep 1 cycle
+                self.cmd_vel.publish(move_cmd)
+                r.sleep()
 
-        while (self.enabled and
-               abs(turn_angle + angular_tolerance) < abs(goal_angle) and
-               not rospy.is_shutdown()):
-            # Publish the Twist message and sleep 1 cycle
-            self.cmd_vel.publish(move_cmd)
-            r.sleep()
+                # Get the current rotation
+                (position, rotation) = self.get_odom()
 
-            # Get the current rotation
-            (position, rotation) = self.get_odom()
+                # Compute the amount of rotation since the last loop
+                delta_angle = normalize_angle(rotation - last_angle)
 
-            # Compute the amount of rotation since the last loop
-            delta_angle = normalize_angle(rotation - last_angle)
+                # Add to the running total
+                turn_angle += delta_angle
+                last_angle = rotation
+                looped = True
 
-            # Add to the running total
-            turn_angle += delta_angle
-            last_angle = rotation
-            looped = True
-
-        # Reset beam number
-        if looped:
-            self.resetBeam.publish(2)
-            looped = False
+            # Reset beam number
+            if looped:
+                self.resetBeam.publish(2)
+                looped = False
 
         # Stop the robot before the next loop
         move_cmd = Twist()
