@@ -73,29 +73,6 @@ class TurnToVisitor():
         # Set the odom frame
         self.odom_frame = '/odom'
 
-        # Get the starting position values
-        (position, rotation) = self.get_odom()
-
-        # Stop the robot before the rotation
-        move_cmd = Twist()
-        self.cmd_vel.publish(move_cmd)
-        rospy.sleep(1)
-
-        # Set the movement command to a rotation
-        self.move_cmd.angular.z = angular_speed
-
-        # Track the last angle measured
-        self.last_angle = rotation
-
-        # Track how far we have turned
-        self.turn_angle = 0
-
-        # A flag to determine if it is ok to reset beam angle
-        self.looped = False
-
-        # Set the rotation angle to Pi radians (180 degrees)
-        self.goal_angle = (self.beamAngle - 180) / 180.0 * pi
-
         # Find out if the robot uses /base_link or /base_footprint
         try:
             self.tf_listener.waitForTransform(
@@ -111,23 +88,54 @@ class TurnToVisitor():
                     "Cannot find transform between /odom and /base_link or /base_footprint")
                 rospy.signal_shutdown("tf Exception")
 
+        # Get the starting position values
+        (position, rotation) = self.get_odom()
+
+        # Stop the robot before the rotation
+        move_cmd = Twist()
+        self.cmd_vel.publish(move_cmd)
+        rospy.sleep(1)
+
+        # Set the movement command to a rotation
+        move_cmd.angular.z = angular_speed
+
+        # Track the last angle measured
+        last_angle = rotation
+
+        # Track how far we have turned
+        turn_angle = 0
+
+        # A flag to determine if it is ok to reset beam angle
+        looped = False
         while not rospy.is_shutdown():
+            # Get the starting position values
+            (position, rotation) = self.get_odom()
+            # Track the last angle measured
+            last_angle = rotation
+            # Track how far we have turned
+            turn_angle = 0
+            # A flag to determine if it is ok to reset beam angle
+            looped = False
             while (self.initiated and self.enabled and
-                   abs(self.turn_angle + angular_tolerance) <
-                   abs(self.goal_angle)):
+                   abs(turn_angle + angular_tolerance) < abs(self.goal_angle)):
+                if not looped:
+                    # Stop the robot before the rotation
+                    move_cmd = Twist()
+                    self.cmd_vel.publish(move_cmd)
+                    rospy.sleep(1)
                 # Publish the Twist message and sleep 1 cycle
-                self.cmd_vel.publish(self.move_cmd)
+                self.cmd_vel.publish(move_cmd)
                 r.sleep()
 
                 # Get the current rotation
                 (position, rotation) = self.get_odom()
 
                 # Compute the amount of rotation since the last loop
-                delta_angle = normalize_angle(rotation - self.last_angle)
+                delta_angle = normalize_angle(rotation - last_angle)
 
                 # Add to the running total
-                self.turn_angle += delta_angle
-                self.last_angle = rotation
+                turn_angle += delta_angle
+                last_angle = rotation
                 looped = True
 
             # Reset beam number
@@ -155,22 +163,6 @@ class TurnToVisitor():
         rospy.loginfo('angle callback: %d' % msg.data)
         self.initiated = True
         self.beamAngle = msg.data
-        # Get the starting position values
-        (position, rotation) = self.get_odom()
-
-        # Stop the robot before the rotation
-        move_cmd = Twist()
-        self.cmd_vel.publish(move_cmd)
-        rospy.sleep(1)
-
-        # Track the last angle measured
-        self.last_angle = rotation
-
-        # Track how far we have turned
-        self.turn_angle = 0
-
-        # A flag to determine if it is ok to reset beam angle
-        self.looped = False
 
         # Set the rotation angle to Pi radians (180 degrees)
         self.goal_angle = (self.beamAngle - 180) / 180.0 * pi
