@@ -163,9 +163,6 @@ class TurnToVisitor():
         self.cmd_vel.publish(move_cmd)
         rospy.sleep(1)
 
-        # Set the movement command to a rotation
-        self.move_cmd.angular.z = angular_speed
-
         # Track the last angle measured
         self.last_angle = rotation
 
