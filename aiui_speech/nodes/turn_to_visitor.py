@@ -147,6 +147,7 @@ class TurnToVisitor():
         return (Point(*trans), quat_to_angle(Quaternion(*rot)))
 
     def angle_callback(self, msg):
+        rospy.loginfo('angle callback: %d' % msg.data)
         self.initiated = True
         self.beamAngle = msg.data
 
