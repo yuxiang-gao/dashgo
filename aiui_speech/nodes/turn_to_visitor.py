@@ -38,6 +38,8 @@ class TurnToVisitor():
         # A flag to determine whether or not turn_to_visitor is enabled
         self.enabled = True
 
+        self.initiated = False
+
         # Publisher to control the robot's speed
         self.cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=5)
 
@@ -61,9 +63,6 @@ class TurnToVisitor():
 
         # Subscribe to the robot_state topic to receive wake up angles.
         rospy.Subscriber('robot_state', String, self.state_callback)
-
-        # Set the rotation angle to Pi radians (180 degrees)
-        goal_angle = (self.beamAngle - 180) / 180.0 * pi
 
         # Initialize the tf listener
         self.tf_listener = tf.TransformListener()
@@ -109,8 +108,8 @@ class TurnToVisitor():
         # A flag to determine if it is ok to reset beam angle
         looped = False
         while not rospy.is_shutdown():
-            while (self.enabled and
-                   abs(turn_angle + angular_tolerance) < abs(goal_angle)):
+            while (self.initiated and self.enabled and
+                   abs(turn_angle + angular_tolerance) < abs(self.goal_angle)):
                 # Publish the Twist message and sleep 1 cycle
                 self.cmd_vel.publish(move_cmd)
                 r.sleep()
@@ -148,7 +147,11 @@ class TurnToVisitor():
         return (Point(*trans), quat_to_angle(Quaternion(*rot)))
 
     def angle_callback(self, msg):
+        self.initiated = True
         self.beamAngle = msg.data
+
+        # Set the rotation angle to Pi radians (180 degrees)
+        self.goal_angle = (self.beamAngle - 180) / 180.0 * pi
 
     def state_callback(self, msg):
         if msg.data == 'idle' or msg.data == 'end':
