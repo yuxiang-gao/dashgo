@@ -80,8 +80,8 @@ class NavTest():
             Point(-0.861, -0.019, 0.000),
             Quaternion(0.000, 0.000, 0.892, -0.451))
 
-        # route = ['loc_1', 'loc_2', 'loc_3', 'loc_4', 'loc_5', 'loc_6']
-        route = ['loc_1', 'loc_2']
+        route = ['loc_1', 'loc_2', 'loc_3', 'loc_4', 'loc_5', 'loc_6']
+        # route = ['loc_1', 'loc_2']
 
         # Publisher to manually control the robot
         # e.g. to stop it
