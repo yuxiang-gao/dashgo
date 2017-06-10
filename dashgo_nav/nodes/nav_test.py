@@ -61,24 +61,43 @@ class NavTest():
         locations = dict()
         route = list()
 
+        # locations['loc_1'] = Pose(
+        #     Point(-0.917, 5.665, 0.000),
+        #     Quaternion(0.000, 0.000, 0.478, 0.879))
+        # locations['loc_2'] = Pose(
+        #     Point(0.730, 7.884, 0.000),
+        #     Quaternion(0.000, 0.000, 0.948, 0.317))
+        # locations['loc_3'] = Pose(
+        #     Point(-3.719, 4.401, 0.000),
+        #     Quaternion(0.000, 0.000, 0.733, 0.680))
+        # locations['loc_4'] = Pose(
+        #     Point(0.720, 2.229, 0.000),
+        #     Quaternion(0.000, 0.000, 0.786, 0.618))
+        # locations['loc_5'] = Pose(
+        #     Point(1.471, 1.007, 0.000),
+        #     Quaternion(0.000, 0.000, 0.480, 0.877))
+        # locations['loc_6'] = Pose(
+        #     Point(-0.861, -0.019, 0.000),
+        #     Quaternion(0.000, 0.000, 0.892, -0.451))
+
         locations['loc_1'] = Pose(
-            Point(-0.917, 5.665, 0.000),
-            Quaternion(0.000, 0.000, 0.478, 0.879))
+            Point(-13.079, 10.644, 0.000),
+            Quaternion(0.000, 0.000, 0.952, 0.305))
         locations['loc_2'] = Pose(
-            Point(0.730, 7.884, 0.000),
-            Quaternion(0.000, 0.000, 0.948, 0.317))
+            Point(-8.872, 14.910, 0.000),
+            Quaternion(0.000, 0.000, -0.836, 0.549))
         locations['loc_3'] = Pose(
-            Point(-3.719, 4.401, 0.000),
-            Quaternion(0.000, 0.000, 0.733, 0.680))
+            Point(-4.766, 12.545, 0.000),
+            Quaternion(0.000, 0.000, 0.950, 0.314))
         locations['loc_4'] = Pose(
-            Point(0.720, 2.229, 0.000),
-            Quaternion(0.000, 0.000, 0.786, 0.618))
+            Point(-1.727, 10.284, 0.000),
+            Quaternion(0.000, 0.000, 0.986, 0.169))
         locations['loc_5'] = Pose(
-            Point(1.471, 1.007, 0.000),
-            Quaternion(0.000, 0.000, 0.480, 0.877))
+            Point(0.947, 7.799, 0.000),
+            Quaternion(0.000, 0.000, 0.940, 0.340))
         locations['loc_6'] = Pose(
-            Point(-0.861, -0.019, 0.000),
-            Quaternion(0.000, 0.000, 0.892, -0.451))
+            Point(-1.116, 5.282, 0.000),
+            Quaternion(0.000, 0.000, 0.450, 0.893))
 
         route = ['loc_1', 'loc_2', 'loc_3', 'loc_4', 'loc_5', 'loc_6']
         # route = ['loc_1', 'loc_2']
