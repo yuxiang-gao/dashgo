@@ -99,26 +99,23 @@ class NavTest():
         #     Point(-1.116, 5.282, 0.000),
         #     Quaternion(0.000, 0.000, 0.450, 0.893))
         locations['loc_1'] = Pose(
-            Point(-2.387, 3.771, 0.000),
-            Quaternion(0.000, 0.000, 0.462, 0.887))
+            Point(1.312, 7.452, 0.00),
+            Quaternion(0.000, 0.000, 0.961, 0.277))
         locations['loc_2'] = Pose(
-            Point(-0.528, 6.085, 0.000),
-            Quaternion(0.000, 0.000, 0.378, 0.926))
+            Point(-0.993, 9.096, 0.000),
+            Quaternion(0.000, 0.000, 0.950, 0.312))
         locations['loc_3'] = Pose(
-            Point(-1.281, 9.811, 0.000),
-            Quaternion(0.000, 0.000, -0.654, 0.757))
-        locations['loc_3'] = Pose(
+            Point(-3.958, 11.547, 0.000),
+            Quaternion(0.000, 0.000, 0.950, 0.313))
+        locations['loc_4'] = Pose(
             Point(-4.766, 12.545, 0.000),
             Quaternion(0.000, 0.000, 0.950, 0.314))
-        locations['loc_4'] = Pose(
-            Point(-1.727, 10.284, 0.000),
-            Quaternion(0.000, 0.000, 0.986, 0.169))
-        locations['loc_2'] = Pose(
-            Point(-8.872, 14.910, 0.000),
-            Quaternion(0.000, 0.000, -0.836, 0.549))
-        locations['loc_1'] = Pose(
-            Point(-13.079, 10.644, 0.000),
-            Quaternion(0.000, 0.000, 0.952, 0.305))
+        locations['loc_5'] = Pose(
+            Point(-8.897, 14.415, 0.000),
+            Quaternion(0.000, 0.000, 0.930, -0.367))
+        locations['loc_6'] = Pose(
+            Point(0.730, 7.884, 0.000),
+            Quaternion(0.000, 0.000, 0.948, 0.317))
 
 
 
