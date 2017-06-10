@@ -361,15 +361,15 @@ class AIUI_ROS:
                                     'pause': ['pause speech'],
                                     'continue': ['continue speech']}
         # Intro for each loaction
-        self.TTSText = {'loc_0': '吃葡萄',
-                        'loc_1': '吃葡萄不吐',
-                        'loc_2': '吃葡萄不吐葡萄皮',
-                        'loc_3': '吃葡萄不吐葡',
-                        'loc_4': '吃葡萄不',
-                        'loc_5': '吃葡',
-                        'loc_6': '吃葡萄不吐葡萄',
-                        'end': 'end',
-                        'timeout': 'timeout'}
+        self.TTSText = {'loc_0': '导航开始',
+                        'loc_1': '这里是起始点',
+                        'loc_2': '第一处停靠点：八百标兵奔北坡',
+                        'loc_3': '第二处停靠点：北坡炮兵并排跑',
+                        'loc_4': '第三处停靠点：炮兵怕碰标兵标',
+                        'loc_5': '第四处停靠点：标兵怕碰炮兵炮',
+                        'loc_6': '到达终点，谢谢参观',
+                        'end': '结束',
+                        'timeout': '超时'}
 
         # Start receiving aiui serial
         while not rospy.is_shutdown():
