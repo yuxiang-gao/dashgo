@@ -435,7 +435,7 @@ class AIUI_ROS:
                     return command
 
     def state_callback(self, data):
-        self.robotState = msg.data
+        self.robotState = data.data
 
     def loc_callback(self, data):
         """Callback function for subscription to current location"""
