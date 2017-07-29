@@ -8,7 +8,7 @@ Default Branch: slam_02
 
 # Demo
 
-![Watch the Video!](https://youtu.be/RwoTHarxt7A)
+![[Watch the Video](http://img.youtube.com/vi/RwoTHarxt7A/0.jpg)](https://youtu.be/RwoTHarxt7A)
 
 ## Prerequisites
 
