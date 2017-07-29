@@ -8,7 +8,7 @@ Default Branch: slam_02
 
 # Demo
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/RwoTHarxt7A" frameborder="0" allowfullscreen></iframe>
+![Watch the Video!](https://youtu.be/RwoTHarxt7A)
 
 ## Prerequisites
 
