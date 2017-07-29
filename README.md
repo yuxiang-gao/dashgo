@@ -6,6 +6,10 @@ Default Branch: slam_02
 
 *Email: yuxianggao96@gmail.com*
 
+# Demo
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/RwoTHarxt7A" frameborder="0" allowfullscreen></iframe>
+
 ## Prerequisites
 
 Omitted, use the pre-configured virtual machine.
